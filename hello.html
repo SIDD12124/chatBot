@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        /* General body styling */
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(145deg, #6a11cb, #2575fc);
+            margin: 0;
+            overflow: hidden; /* Prevents scrollbars from appearing */
+        }
+        /* Chatbox container styling */
+        .chatbox {
+            width: 400px;
+            max-width: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0px 10px 40px rgba(0, 0, 0, 0.15);
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.4s ease;
+            animation: bounce 0.8s ease; /* Enhanced bounce animation on load */
+        }
+        @keyframes bounce {
+            0% { transform: translateY(-30px); opacity: 0; }
+            50% { transform: translateY(15px); opacity: 1; }
+            100% { transform: translateY(0); }
+        }
+        /* Header section */
+        .chatbox-header {
+            padding: 20px;
+            background: linear-gradient(45deg, #f39c12, #f1c40f);
+            color: #fff;
+            text-align: center;
+            font-size: 1.4em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            animation: slideDown 0.5s; /* Slide down animation for header */
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        /* Body section where messages are shown */
+        .chatbox-body {
+            height: 350px;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f4f4f9;
+            display: flex;
+            flex-direction: column;
+            scroll-behavior: smooth;
+            position: relative;
+            animation: fadeIn 1s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        /* Message styling for both bot and user */
+        .message {
+            margin: 10px 0;
+            padding: 12px 20px;
+            border-radius: 25px;
+            max-width: 75%;
+            word-wrap: break-word;
+            font-size: 1em;
+            box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.08);
+            animation: slideIn 0.4s ease; /* Smooth entry effect */
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Bot message styling */
+        .bot-message {
+            background-color: #eef3ff;
+            color: #34495e;
+            align-self: flex-start;
+            animation: popIn 0.3s ease forwards; /* Animation for bot message */
+        }
+        /* User message styling */
+        .user-message {
+            background-color: #6a11cb;
+            color: white;
+            align-self: flex-end;
+            text-align: right;
+            animation: popIn 0.3s ease forwards; /* Animation for user message */
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        /* Chatbox footer for input and button */
+        .chatbox-footer {
+            display: flex;
+            padding: 20px;
+            background: #fff;
+            border-top: 1px solid #ddd;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
+        }
+        /* Input field styling */
+        #userInput {
+            flex-grow: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            outline: none;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+        #userInput:focus {
+            border-color: #6a11cb;
+            box-shadow: 0px 0px 8px rgba(106, 17, 203, 0.2);
+            animation: glow 1s infinite alternate; /* Glowing effect */
+        }
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px #6a11cb; }
+            100% { box-shadow: 0 0 20px #6a11cb; }
+        }
+        /* Button styling */
+        button {
+            background-color: #6a11cb;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            margin-left: 15px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            animation: pulse 1.5s infinite; /* Pulse animation for the button */
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        button:hover {
+            background-color: #2575fc;
+            box-shadow: 0px 4px 10px rgba(39, 132, 251, 0.5);
+            transform: translateY(-3px);
+            animation: none; /* Pause pulse on hover */
+        }
+        /* Scrollbar styling */
+        .chatbox-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chatbox-body::-webkit-scrollbar-thumb {
+            background-color: #c1c1c1;
+            border-radius: 8px;
+        }
+        .chatbox-body::-webkit-scrollbar-thumb:hover {
+            background-color: #a1a1a1;
+        }
+        /* Floating background bubbles */
+        .bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            animation: float 6s infinite;
+            filter: blur(8px); /* Blur effect for bubbles */
+        }
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0); }
+        }
+        /* Example of background bubbles */
+        .bubble.bubble1{ 
+            width: 100px; 
+            height: 100px; 
+            top: 10%; 
+            left: 5%; 
+            animation-duration: 8s;
+        }
+        .bubble.bubble2{ 
+            width: 80px; 
+            height: 80px; 
+            bottom: 15%; 
+            right: 10%; 
+            animation-duration: 10s; 
+        }
+        .bubble.bubble3{ 
+            width: 120px; 
+            height: 120px; 
+            top: 50%; 
+            left: 50%; 
+            animation-duration: 12s; 
+        }
+
+    </style>
+</head>
+<body>
+    <div class="bubble bubble1"></div>
+    <div class="bubble bubble2"></div>
+    <div class="bubble bubble3"></div>
+
+    <div class="chatbox">
+        <div class="chatbox-header">
+            <h2>Attractive Chatbot</h2>
+        </div>
+        <div class="chatbox-body" id="chatbox-body">
+            <div class="message bot-message">
+                Hello! I'm here to assist you. How can I help?
+            </div>
+        </div>
+        <div class="chatbox-footer">
+            <input type="text" id="userInput" placeholder="Type a message..." />
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const responses = {
+    "how are you": "I'm just a bot, but I'm doing great! How about you",
+    "what is your name": "I am an attractive chatbot created to assist you.",
+    "tell me a joke": "Why did the scarecrow win an award Because he was outstanding in his field!",
+    "what can you do": "I can answer your questions and have a chat with you!",
+    "what's the weather like": "I can't check the weather, but I hope it's sunny wherever you are!",
+    "what time is it": "I can't tell the time, but I hope it's a good one!",
+    "where are you from": "I exist in the digital world, ready to assist you!",
+    "what is your favorite color": "I don't have a favorite, but I think blue is nice!",
+    "do you have feelings": "I'm just a program, so I don't have feelings like humans do.",
+    "can you help me": "Of course! What do you need help with",
+    "what is ai": "AI stands for Artificial Intelligence, which is the simulation of human intelligence in machines.",
+    "what is your purpose": "My purpose is to assist you with your questions and provide information.",
+    "can you play games": "I can't play games, but I can help you with game rules or strategies!",
+    "what is your favorite food": "I don't eat, but I've heard pizza is popular!",
+    "how old are you": "I don't have an age like humans, but I was created recently!",
+    "can you tell me a story": "Sure! Once upon a time, in a digital world, a chatbot was created to help humans...",
+    "what is your favorite movie": "I don't watch movies, but I've heard 'Inception' is intriguing!",
+    "what is the capital of france": "The capital of France is Paris.",
+    "who is the president of the united states": "As of my last update, Joe Biden is the president.",
+    "what is the meaning of life": "Many say it's to find happiness and fulfillment!",
+    "what is your favorite book": "I don't read, but '1984' by George Orwell is a classic.",
+    "can you sing": "I can't sing, but I can share lyrics or song information!",
+    "what is your favorite animal": "I don't have favorites, but cats and dogs are popular!",
+    "what is the largest planet in our solar system": "The largest planet is Jupiter.",
+    "what is the fastest land animal": "The cheetah is the fastest land animal.",
+    "how many continents are there": "There are seven continents on Earth.",
+    "what is the boiling point of water": "The boiling point of water is 100 degrees Celsius at sea level.",
+    "what is the smallest country in the world": "The smallest country is Vatican City.",
+    "what is the longest river in the world": "The Nile River is often considered the longest.",
+    "what is the tallest mountain in the world": "Mount Everest is the tallest mountain.",
+    "what is the main ingredient in guacamole": "The main ingredient is avocado.",
+    "what is the hardest natural substance on earth": "Diamond is the hardest natural substance.",
+    "what is the most spoken language in the world": "Mandarin Chinese is the most spoken language.",
+    "what is the currency of japan": "The currency of Japan is the yen.",
+    "what is the largest ocean on earth": "The Pacific Ocean is the largest.",
+    "what is the capital of italy": "The capital of Italy is Rome.",
+    "what is the chemical symbol for gold": "The chemical symbol for gold is Au.",
+    "what is the largest mammal in the world": "The blue whale is the largest mammal.",
+    "what is the main gas found in the air we breathe": "The main gas is nitrogen.",
+    "what is the largest living species of lizard": "The Komodo dragon is the largest living species of lizard.",
+    "what is the highest mountain peak in north america": "Denali (formerly Mount McKinley) is the highest peak.",
+    "what is the chemical symbol for silver": "The chemical symbol for silver is Ag.",
+    "what is the largest city in the world by population": "Tokyo is the largest city by population.",
+    "what is the highest waterfall in the world by volume": "The Inga Falls is the highest waterfall by volume.",
+    "what is the largest living species of bird": "The ostrich is the largest living species of bird.",
+    "what is the highest mountain peak in south america": "Aconcagua is the highest peak in South America.",
+    "what is the chemical symbol for copper": "The chemical symbol for copper is Cu.",
+    "what is the largest city in the united states by population": "New York City is the largest city by population.",
+    "what is the highest waterfall in the world by height": "The Angel Falls is the highest waterfall by height.",
+    "what is the largest living species of fish": "The whale shark is the largest living species of fish.",
+    "what is the highest mountain peak in europe": "Mount Elbrus is the highest peak in Europe.",
+    "what is the chemical symbol for iron": "The chemical symbol for iron is Fe.",
+    "what is the largest city in china by population": "Shanghai is the largest city by population.",
+    "what is the highest waterfall in the world by width": "The Victoria Falls is the highest waterfall by width.",
+    "what is the largest living species of insect": "The Goliath beetle is the largest living species of insect.",
+    "what is the highest mountain peak in africa": "Mount Kilimanjaro is the highest peak in Africa.",
+    "what is the chemical symbol for zinc": "The chemical symbol for zinc is Zn.",
+    "what is the largest city in india by population": "Delhi is the largest city by population.",
+    "what is the highest waterfall in the world by flow rate": "The Inga Falls is the highest waterfall by flow rate.",
+    "what is the largest living species of reptile": "The saltwater crocodile is the largest living species of reptile.",
+    "what is the highest mountain peak in asia": "Mount Everest is the highest peak in Asia.",
+    "what is the chemical symbol for tin": "The chemical symbol for tin is Sn.",
+    "what is the largest city in brazil by population": "São Paulo is the largest city by population.",
+    "what is the highest waterfall in the world by total height": "The Tugela Falls is the highest waterfall by total height.",
+    "what is the largest living species of amphibian": "The Chinese giant salamander is the largest living species of amphibian.",
+    "what is the highest mountain peak in australia": "Mount Kosciuszko is the highest peak in Australia.",
+    "what is the chemical symbol for lead": "The chemical symbol for lead is Pb.",
+    "what is the largest city in russia by population": "Moscow is the largest city by population.",
+    "what is the highest waterfall in the world by average flow rate": "The Inga Falls is the highest waterfall by average flow rate.",
+    "what is the largest living species of mammal": "The blue whale is the largest living species of mammal.",
+    "what is the highest mountain peak in antarctica": "Vinson Massif is the highest peak in Antarctica.",
+    "what is the chemical symbol for mercury": "The chemical symbol for mercury is Hg.",
+    "what is the largest city in canada by population": "Toronto is the largest city by population.",
+    "what is the highest waterfall in the world by volume per second": "The Inga Falls is the highest waterfall by volume per second.",
+    "what is the largest living species of bird of prey": "The golden eagle is the largest living species of bird of prey.",
+    "what is the highest mountain peak in south africa": "Mount Njesuthi is the highest peak in South Africa.",
+    "what is the chemical symbol for nickel": "The chemical symbol for nickel is Ni.",
+    "what is the largest city in germany by population": "Berlin is the largest city by population.",
+    "what is the highest waterfall in the world by height of the largest drop": "The Angel Falls is the highest waterfall by height of the largest drop.",
+    "what is the largest living species of shark": "The whale shark is the largest living species of shark."
+};
+
+
+        function getBotResponse(userMessage) {
+            userMessage = userMessage.trim().toLowerCase().replace(/[?.!]/g, ''); // Convert user input to lowercase and trim spaces
+            return responses[userMessage] || "I'm not sure how to respond to that.";
+        }
+
+        function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const userMessage = userInput.value;
+
+            if (userMessage.trim() === "") {
+                return; // If the user input is empty, do nothing
+            }
+
+            // Display the user's message
+            const chatboxBody = document.getElementById('chatbox-body');
+            const userMessageElement = document.createElement('div');
+            userMessageElement.classList.add('message', 'user-message');
+            userMessageElement.textContent = userMessage;
+            chatboxBody.appendChild(userMessageElement);
+            chatboxBody.scrollTop = chatboxBody.scrollHeight; // Scroll to the bottom
+
+            // Get and display the bot's response
+            const botResponse = getBotResponse(userMessage);
+            const botMessageElement = document.createElement('div');
+            botMessageElement.classList.add('message', 'bot-message');
+            botMessageElement.textContent = botResponse;
+            chatboxBody.appendChild(botMessageElement);
+            chatboxBody.scrollTop = chatboxBody.scrollHeight; // Scroll to the bottom again
+
+            // Clear the user input field
+            userInput.value = "";
+        }
+
+        // Add event listener for Enter key press
+        document.getElementById("userInput").addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
